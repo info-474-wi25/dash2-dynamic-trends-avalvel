@@ -22,9 +22,33 @@ const svg2_RENAME = d3.select("#lineChart2")
 // const tooltip = ...
 
 // 2.a: LOAD...
-d3.csv("YOUR_CSV_NAME.csv").then(data => {
+d3.csv("weather.csv").then(data => {
     // 2.b: ... AND TRANSFORM DATA
+    data.forEach(d => {
+        // Date object
+        d.date = new Date(d.date);  
 
+        // Integers
+        d.actual_mean_temp = parseInt(d.actual_mean_temp);
+        d.actual_min_temp = parseInt(d.actual_min_temp);
+        d.actual_max_temp = parseInt(d.actual_max_temp);
+        d.average_min_temp = parseInt(d.average_min_temp);
+        d.average_max_temp = parseInt(d.average_max_temp);
+        d.record_min_temp = parseInt(d.record_min_temp);
+        d.record_max_temp = parseInt(d.record_max_temp);
+        d.record_min_temp_year = parseInt(d.record_min_temp_year);
+        d.record_max_temp_year = parseInt(d.record_max_temp_year);
+
+        // Doubles
+        d.actual_precipitation = parseFloat(d.actual_precipitation);
+        d.average_precipitation = parseFloat(d.average_precipitation);
+        d.record_precipitation = parseFloat(d.record_precipitation);
+
+        // Strings
+        d.city = d.city.trim();
+        d.city_code = d.city_code.trim();
+        d.city_full = d.city_full.trim();
+    });
     // 3.a: SET SCALES FOR CHART 1
 
 
