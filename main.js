@@ -4,7 +4,7 @@ const width = 900 - margin.left - margin.right;
 const height = 400 - margin.top - margin.bottom;
 
 // Create SVG containers for both charts
-const svgChart = d3.select("#lineChart1") // If you change this ID, you must change it in index.html too
+const svgChart = d3.select("#lineChart1")
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -12,11 +12,22 @@ const svgChart = d3.select("#lineChart1") // If you change this ID, you must cha
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
 // (If applicable) Tooltip element for interactivity
-// const tooltip = ...
+const tooltip = d3.select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("visibility", "hidden")
+    .style("background", "rgba(0, 0, 0, 0.75)")
+    .style("color", "white")
+    .style("padding", "8px 12px")
+    .style("border-radius", "6px")
+    .style("font-size", "12px")
+    .style("pointer-events", "none")
+    .style("z-index", "10");
 
 // 2.a: LOAD...
 d3.csv("weather.csv").then(data => {
-    console.log("Loaded data sample:", data.slice(0, 5)); // Check if data is loading
+    console.log("Loaded data sample:", data.slice(0, 5));
     // 2.b: ... AND TRANSFORM DATA
     data.forEach(d => {
         // Date object
@@ -45,9 +56,9 @@ d3.csv("weather.csv").then(data => {
         // console.log(d.city);
     });
 
-    const cities = [...new Set(data.map(d => d.city))].sort();  // Get unique city names, sorted alphabetically
-    const defaultCity = cities[0];  // Select first city alphabetically (Indianapolis, most likely)
-    const cityData = data.filter(d => d.city === defaultCity); // Filter data for this city
+    const cities = [...new Set(data.map(d => d.city))].sort();
+    const defaultCity = cities[0];
+    const cityData = data.filter(d => d.city === defaultCity);
     
     // 3.a: SET SCALES FOR CHART 1
 
@@ -59,15 +70,10 @@ d3.csv("weather.csv").then(data => {
     // Y Scale - Temperature scale
     const yScale = d3.scaleLinear()
         .domain([
-            d3.min(cityData, d => d.actual_min_temp) - 5,  // Min temp, padded for visibility
-            d3.max(cityData, d => d.actual_max_temp) + 5   // Max temp, padded for visibility
+            d3.min(cityData, d => d.actual_min_temp) - 5,
+            d3.max(cityData, d => d.actual_max_temp) + 5
         ])
         .range([height, 0]);
-
-    // console.log("Default city:", defaultCity);
-    // console.log("X Scale domain:", xScale.domain());
-    // console.log("Y Scale domain:", yScale.domain());
-
 
     // 4.a: PLOT DATA FOR CHART 1
     const line = d3.line()
@@ -75,53 +81,7 @@ d3.csv("weather.csv").then(data => {
         .y(d => yScale(d.actual_mean_temp))
         .curve(d3.curveMonotoneX);
 
-    // 4.b: APPEND LINE PATH TO SVG
-    // svgChart.append("path")
-    //     .datum(cityData)  // Binds the filtered dataset
-    //     .attr("fill", "none")  // No fill, just a line
-    //     .attr("stroke", "steelblue")  // Line color
-    //     .attr("stroke-width", 2)
-    //     .attr("d", line);  // Uses the line generator
-
-
-    // 5.a: ADD AXES FOR CHART 1
-    // X-Axis
-    // svgChart.append("g")
-    //     .attr("transform", `translate(0, ${height})`)
-    //     .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat("%b %Y")));
-
-    // // 5.b: Y-Axis
-    // svgChart.append("g")
-    //     .call(d3.axisLeft(yScale));
-
-    // 6.a: ADD LABELS FOR CHART 1
-    // svgChart.append("text")
-    //     .attr("x", width / 2)
-    //     .attr("y", -margin.top / 2)
-    //     .attr("text-anchor", "middle")
-    //     .text("Chicago Temperature Trends (2014-2015)")
-    //     .style("font-size", "16px")
-    //     .style("font-weight", "bold");
-
-    // // 6.b: X-AXIS LABEL
-    // svgChart.append("text")
-    //     .attr("x", width / 2)
-    //     .attr("y", height + margin.bottom - 10)
-    //     .attr("text-anchor", "middle")
-    //     .style("font-size", "14px")
-    //     .text("Date");
-
-    // // 6.c: Y-AXIS LABEL
-    // svgChart.append("text")
-    //     .attr("transform", "rotate(-90)")
-    //     .attr("y", -margin.left + 20)
-    //     .attr("x", -height / 2)
-    //     .attr("text-anchor", "middle")
-    //     .text("Actual Mean Temperature (°F)");
-
-    // === STEP 7: ADD INTERACTIVITY ===
-
-    // 7.a: POPULATE DROPDOWN MENU
+    // Populate Dropdown menu
     const dropdown = d3.select("#cityDropdown");
     dropdown.selectAll("option")
         .data(cities)
@@ -130,7 +90,7 @@ d3.csv("weather.csv").then(data => {
         .attr("value", d => d)
         .text(d => d);
 
-    // 7.b: INITIAL AXES (draw only once!)
+    // initial axis
     svgChart.append("g")
         .attr("class", "x-axis")
         .attr("transform", `translate(0, ${height})`)
@@ -140,7 +100,7 @@ d3.csv("weather.csv").then(data => {
         .attr("class", "y-axis")
         .call(d3.axisLeft(yScale));
 
-    // 7.c: INITIAL X/Y AXIS LABELS (optional – only if not dynamic)
+    // initial x/y axis
     svgChart.append("text")
         .attr("class", "axis-label x-label")
         .attr("x", width / 2)
@@ -158,7 +118,7 @@ d3.csv("weather.csv").then(data => {
         .style("font-size", "14px")
         .text("Actual Mean Temperature (°F)");
 
-    // 7.d: INITIAL CHART TITLE (draw only once, update later)
+    // title
     svgChart.append("text")
         .attr("class", "title")
         .attr("x", width / 2)
@@ -168,7 +128,7 @@ d3.csv("weather.csv").then(data => {
         .style("font-weight", "bold")
         .text(`Mean Temperature Trends in ${defaultCity} (2014–2015)`);
 
-    // 7.e: DRAW INITIAL LINE
+    // draw line
     svgChart.append("path")
         .datum(cityData)
         .attr("class", "line")
@@ -177,7 +137,7 @@ d3.csv("weather.csv").then(data => {
         .attr("stroke-width", 2)
         .attr("d", line);
 
-    // 7.f: UPDATE CHART ON DROPDOWN CHANGE
+    // dropdown function
     function updateChart(selectedCity) {
         const filteredData = data.filter(d => d.city === selectedCity);
 
@@ -205,19 +165,61 @@ d3.csv("weather.csv").then(data => {
             .transition()
             .duration(750)
             .attr("d", line);
+        
+        // TOOLTIP DATA POINTS
+        svgChart.selectAll(".data-point").remove();
+
+        svgChart.selectAll(".data-point")
+            .data(filteredData)
+            .enter()
+            .append("circle")
+            .attr("class", "data-point")
+            .attr("cx", d => xScale(d.date))
+            .attr("cy", d => yScale(d.actual_mean_temp))
+            .attr("r", 5)
+            .style("fill", "steelblue")
+            .style("opacity", 0)
+            .on("mouseover", function (event, d) {
+                tooltip.style("visibility", "visible")
+                    .html(`
+                        <strong>Date:</strong> ${d3.timeFormat("%b %d, %Y")(d.date)}<br>
+                        <strong>Mean Temp:</strong> ${d.actual_mean_temp} °F
+                    `)
+                    .style("top", (event.pageY + 12) + "px")
+                    .style("left", (event.pageX + 12) + "px");
+
+                d3.select(this).style("opacity", 1);
+
+                // Highlight point
+                svgChart.append("circle")
+                    .attr("class", "hover-circle")
+                    .attr("cx", xScale(d.date))
+                    .attr("cy", yScale(d.actual_mean_temp))
+                    .attr("r", 6)
+                    .style("fill", "steelblue");
+            })
+            .on("mousemove", function (event) {
+                tooltip.style("top", (event.pageY + 12) + "px")
+                    .style("left", (event.pageX + 12) + "px");
+            })
+            .on("mouseout", function () {
+                tooltip.style("visibility", "hidden");
+                d3.select(this).style("opacity", 0);
+                svgChart.selectAll(".hover-circle").remove();
+            });
 
         // Update chart title
         svgChart.select(".title")
             .text(`Temperature Trends in ${selectedCity} (2014–2015)`);
     }
 
-    // 7.g: TRIGGER UPDATE WHEN DROPDOWN CHANGES
+    // trigger update
     dropdown.on("change", function () {
         const selectedCity = d3.select(this).property("value");
         updateChart(selectedCity);
     });
 
-    // 7.h: INITIALIZE CHART
+    // initilize chart
     updateChart(defaultCity);
 
 });
